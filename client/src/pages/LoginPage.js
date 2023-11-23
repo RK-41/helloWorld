@@ -21,7 +21,7 @@ export default function LoginPage() {
 	async function login(ev) {
 		ev.preventDefault();
 
-		const response = await fetch('http://127.0.0.1:4000/login', {
+		const response = await fetch('http://localhost:4000/login', {
 			method: 'POST',
 			body: JSON.stringify({ username, password }),
 			headers: {
@@ -37,7 +37,7 @@ export default function LoginPage() {
 				setRedirect(true);
 			});
 		} else {
-			alert('Wrong Credential(s)');
+			alert('Wrong Credentials');
 		}
 	}
 

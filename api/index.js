@@ -8,16 +8,24 @@
 
    07.11.
    User Login, Profile & Logout Implementation
+
+   23.11.
+   Create Post and Get Posts Implementation
 */
 
 // const express = require('express');
+import fs from 'fs';
 import express from 'express';
 import cors from 'cors';
 import mongoose from 'mongoose';
-import User from './models/User.js';
+import User from './models/UserModel.js';
+import Post from './models/PostModel.js';
 import bcrypt from 'bcryptjs';
 import jwt from 'jsonwebtoken';
 import cookieParser from 'cookie-parser';
+import multer from 'multer';
+
+const uploadMiddleware = multer({ dest: 'uploads/' });
 
 // Salt for Encryption and Authentication
 const salt = bcrypt.genSaltSync(10);
@@ -34,6 +42,7 @@ app.use(cors({ credentials: true, origin: 'http://localhost:3000' }));
 
 app.use(express.json());
 app.use(cookieParser());
+app.use('/uploads', express.static('uploads'));
 
 // Connecting the MongoDB through Mongoose
 const connectDB = async () => {
@@ -123,12 +132,46 @@ app.get('/profile', (req, res) => {
 		}
 	});
 	res.json(req.cookies);
-
 });
 
 // USER LOGOUT
 app.post('/logout', (req, res) => {
 	res.cookie('token', '', { sameSite: 'none', secure: true }).json('ok');
+});
+
+// CREATE POST
+app.post('/post', uploadMiddleware.single('file'), async (req, res) => {
+	const { originalname, path } = req.file;
+	const parts = originalname.split('.');
+	const ext = parts[parts.length - 1];
+	const newPath = path + '.' + ext;
+	fs.renameSync(path, newPath);
+
+	const { token } = req.cookies;
+	jwt.verify(token, secret, {}, async (err, info) => {
+		if (err) {
+			throw err;
+		}
+		const { title, summary, content } = req.body;
+		const postDoc = await Post.create({
+			title,
+			summary,
+			content,
+			cover: newPath,
+			author: info.id,
+		});
+
+		res.json(postDoc);
+	});
+	// res.json(req.files);
+});
+
+app.get('/post', async (req, res) => {
+	const posts = await Post.find()
+		.populate('author', ['username'])
+		.sort({ createdAt: -1 })
+		.limit(20);
+	res.json(posts);
 });
 
 app.listen(port, () => console.log(`Server is running on port ${port}`));

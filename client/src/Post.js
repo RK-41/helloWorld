@@ -1,33 +1,45 @@
 /*
-  04.11.
+   04.11.
+
+   Post Preview/Link Section on Home Page
+
+   23.11.
+   Implemented the Attributes and Functionalities of the Post Section
 
 */
+import { format } from 'date-fns';
+import { Link } from 'react-router-dom';
 
-export default function Post() {
+export default function Post({
+	_id,
+	title,
+	summary,
+	cover,
+	createdAt,
+	author,
+}) {
 	return (
 		<div className='post'>
-			<div className='image'>
-				<img
-					src='https://www.popsci.com/uploads/2022/09/06/IMG_6219-1-scaled.jpg?auto=webp&width=1440&height=1080'
-					alt=''
-				/>
-			</div>
+			<Link to={`/post/${_id}`}>
+				<div className='image'>
+					<img src={'http://localhost:4000/' + cover} alt='Cover' />
+				</div>
+			</Link>
 
 			<div className='texts'>
-				<h2>Journey to the center of a quantum computer</h2>
+				<Link to={`/post/${_id}`}>
+					<h2>{title}</h2>
+				</Link>
 
 				<p className='info'>
-					<a href='' className='author'>
-						Charlotte Hu
+					{/* FUTURE CORRECTION: Update 'href' to proper route */}
+					<a href='/' className='author'>
+						{author.username}
 					</a>
-					<time>2023-11-04 16:46</time>
+					<time>{format(new Date(createdAt), 'MMM d, yyyy HH:mm')}</time>
 				</p>
 
-				<p className='summary'>
-					The beating heart of IBM’s quantum computer is a chip no bigger than a
-					quarter. These extravagant machines promise to solve difficult
-					problems that stump today’s best classical computers.
-				</p>
+				<p className='summary'>{summary}</p>
 			</div>
 		</div>
 	);
